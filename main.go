@@ -1,9 +1,3 @@
-// 1. Создать access токен с информацией о GUID
-// 2. Создать refresh токен, передать пару токенов при GET запросе
-// 3. Создать API endpoint для получения пары ключей, создать prtected route с доступом по jwt access ключу
-// 4. Установить связь с db, создать тестовый инстанс с GUID, username, passwd, и первичным ключом по id
-// 5.
-
 package main
 
 import (
@@ -29,8 +23,6 @@ func main() {
 
 	//init logging
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
-
-	//2 use go-playground/validation/v10
 
 	//db init
 	db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))

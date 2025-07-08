@@ -156,8 +156,7 @@ func RefreshHandler(db *sql.DB) http.HandlerFunc {
 				//отправляем запрос на вебсокет
 				http.NewRequest("POST", "/websocket", strings.NewReader(currIP))
 			}
-			//Удаляем куку, чтобы избежать кражи токена в момент замены
-			utils.SetCookieHandler("accessToken", "", -1)
+
 			accessToken, err := generateToken(u.Username, guid)
 			if err != nil {
 				log.Error().Msgf(err.Error())
@@ -165,7 +164,18 @@ func RefreshHandler(db *sql.DB) http.HandlerFunc {
 
 				return
 			}
-			utils.SetCookieHandler("accessToken", accessToken, 1800)
+			cookie := http.Cookie{
+				Name:     "accessToken",
+				Value:    accessToken,
+				Path:     "/",
+				MaxAge:   1800,
+				HttpOnly: true,
+				//Работает только с https и на localhost
+				Secure:   true,
+				SameSite: http.SameSiteLaxMode,
+			}
+			http.SetCookie(w, &cookie)
+			log.Debug().Msgf("cookie set! %s", &cookie)
 
 			//Получаем новый рефреш токен
 			refreshToken, err := generateToken(u.Username, guid)

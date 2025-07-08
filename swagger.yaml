@@ -1,0 +1,125 @@
+openapi: 3.0.4
+info:
+  title: Login OpenAPI
+  version: 0.0.1
+servers:
+  - url: http://0.0.0.0:8000/
+    description: Dev
+paths:
+  /login/{guid}:
+    post:
+      summary: Получение access и refresh токенов
+      requestBody:
+        description: JSON с username и паролем
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+      parameters: 
+        - in: path
+          name: guid 
+          required: true
+          schema:
+            type: string
+            example: 66d89b0b-eaae-4853-90c3-238d4531bd1a
+          description: The user ID
+      tags: 
+        - Login
+      responses:
+        '200':
+          description: Успешно получена пара токенов для заданного username и пароля
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenPair"
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: accessToken = "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTIwNjU5OTYsIm5hbWUiOiJMb2wiLCJzdWIiOiJ4eHh4eHh4eC14eHh4LU14eHgtTnh4eC14eHh4eHh4eHh4eHgifQ.aPQRuZLeUiQ64K0KqOgYmbV_VamT4ZgUlNoNUz-girxpcYBRAjFI7q7Z_32_UiiLSmehH3Yq4xzk1og9AKUzRQ"; Path=/; HttpOnly
+  /refresh:
+    get:
+      summary: Обновление access и refresh токенов на основе предыдущей пары
+      tags: 
+        - Refresh
+      security: 
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Успешно обновлена пара токенов 
+          content:
+            application/json:
+                schema:
+                  $ref: "#/components/schemas/TokenPair"
+  /guid:
+    get:
+      summary: Получение GUID текущего пользователя под защищенным роутом
+      tags: 
+        - Refresh
+      security: 
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Успешно получен GUID текущего пользователя на защищенном роуте
+          content:
+            application/json:
+                schema:
+                  $ref: "#/components/schemas/GuidResponse"
+  /logout:
+    get:
+      summary: Логаут пользователя(удаление accessToken из куки, refreshToken из базы)
+      tags: 
+        - Refresh
+      security: 
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Токены успешно удалены
+          content:
+            application/json:
+                schema:
+                  $ref: "#/components/schemas/GuidResponse"
+            
+components:
+  schemas:
+    User:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        guid:
+          type: string
+          example: 66d89b0b-eaae-4853-90c3-238d4531bd1a
+        username:
+          type: string
+          example: John Doe
+        password:
+          type: string
+          example: 123456
+    TokenPair: 
+      type: object
+      required:
+        - accessToken
+        - refreshToken
+      properties:
+        accessToken:
+          type: string
+          example: eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTIwNjU5OTYsIm5hbWUiOiJMb2wiLCJzdWIiOiJ4eHh4eHh4eC14eHh4LU14eHgtTnh4eC14eHh4eHh4eHh4eHgifQ.aPQRuZLeUiQ64K0KqOgYmbV_VamT4ZgUlNoNUz-girxpcYBRAjFI7q7Z_32_UiiLSmehH3Yq4xzk1og9AKUzRQ
+        refreshToken:
+          type: string
+          example: QjaK1nDh/lbyjOcS0oCTVcwXzANzgQkI+0dI/Zu9gItWmMzAfHLI6+76PDwu5bcOsf7eWNd5xGzV345/09+8SUMUNPWQcPNJ79A4elW5+DRmjOyfAKNZ4hzZIW3L9153BJ4En7bsjPxMpi2qCK8fD+P+XOqGp0kgWjZsrkjRCHTKn5eZfKkBmW5ED97Iq8+PdMXY3n/0WmctDVaiyQ35StaevruSCX74yHh/9j2U3HNtwjDmVX7LbdhZYK43VWWpMfjL77qx5NR61oQ/Lmcv7ancAxuU8FcqRzGSsXEPl0oK9A6RKwP2NaP9idjifqFXHC7e21kspgRYrKYcPo8=
+    GuidResponse:
+      type: object
+      required:
+        - guid
+      properties:
+        guid:
+          type: string
+          example: 66d89b0b-eaae-4853-90c3-238d4531bd1a
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: accessToken 

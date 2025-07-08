@@ -1,0 +1,29 @@
+
+services:
+  test-cv:
+    container_name: test-cv
+    build: .
+    environment:
+      APPLICATION_PORT: "8000"
+      DATABASE_URL: "host=go_db user=postgres password=postgres dbname=postgres sslmode=disable"
+      AES_KEY: "LeTitBELEt1tbejsRustnGofoRever84"
+      AES_IV: "16digitIvKey01234"
+    ports:
+      - "8000:8000"
+    depends_on:
+      - go_db
+  go_db:
+    container_name: go_db
+    image: postgres:12
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "1337:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata: {}
